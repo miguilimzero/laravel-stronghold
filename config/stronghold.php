@@ -15,9 +15,6 @@ return [
     'providers' => [
         'github',
         'google',
-        'facebook',
-        'twitter',
-        'linkedin',
     ],
 
     /*

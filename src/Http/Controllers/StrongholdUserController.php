@@ -49,7 +49,7 @@ class StrongholdUserController extends Controller
             ];
         });
 
-        $connectedAccounts = $request->user()->connectedAccounts ?? collect();
+        $connectedAccounts = $request->user()->getConnectedProviders();
 
         return app(ProfileViewResponse::class, [
             'confirmsTwoFactorAuthentication' => $confirmsTwoFactorAuthentication,
@@ -127,13 +127,13 @@ class StrongholdUserController extends Controller
      */
     public function destroyConnectedAccount(Request $request, string $id): RedirectResponse
     {
-        $connectedAccount = ConnectedAccount::query()->where('id', $id)
-            ->where('user_id', $request->user()->id)
-            ->firstOrFail();
-
         if (! $request->user()->canDisconnectAccount()) {
             abort(403);
         }
+
+        $connectedAccount = ConnectedAccount::query()->where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
 
         $connectedAccount->delete();
 

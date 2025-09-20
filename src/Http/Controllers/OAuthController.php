@@ -4,6 +4,8 @@ namespace Miguilim\LaravelStronghold\Http\Controllers;
 
 use Exception;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
@@ -15,31 +17,9 @@ use Miguilim\LaravelStronghold\Contracts\CreatesConnectedAccounts;
 class OAuthController extends Controller
 {
     /**
-     * The guard implementation.
-     *
-     * @var \Illuminate\Contracts\Auth\StatefulGuard
-     */
-    protected $guard;
-
-    /**
-     * Create a new controller instance.
-     *
-     * @param  \Illuminate\Contracts\Auth\StatefulGuard  $guard
-     * @return void
-     */
-    public function __construct(StatefulGuard $guard)
-    {
-        $this->guard = $guard;
-    }
-
-    /**
      * Redirect the user to the provider authentication page.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $provider
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function redirectToProvider(Request $request, string $provider)
+    public function redirectToProvider(Request $request, string $provider): RedirectResponse
     {
         $this->validateProvider($provider);
 
@@ -48,12 +28,8 @@ class OAuthController extends Controller
 
     /**
      * Handle the callback from the provider.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $provider
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    public function handleProviderCallback(Request $request, string $provider)
+    public function handleProviderCallback(Request $request, StatefulGuard $guard, string $provider): JsonResponse|RedirectResponse
     {
         $this->validateProvider($provider);
 
@@ -65,7 +41,7 @@ class OAuthController extends Controller
                 : redirect()->route('login')->with('error', 'Authentication failed.');
         }
 
-        return DB::transaction(function () use ($request, $provider, $socialUser) {
+        return DB::transaction(function () use ($request, $guard, $provider, $socialUser) {
             $connectedAccount = ConnectedAccount::firstOrNew([
                 'provider' => $provider,
                 'provider_id' => $socialUser->getId(),
@@ -74,16 +50,16 @@ class OAuthController extends Controller
             if ($connectedAccount->exists) {
                 // Existing connected account - log in the user
                 $user = $connectedAccount->user;
-                
-                $this->guard->login($user, true);
-                
+
+                $guard->login($user, true);
+
                 return $request->wantsJson()
                     ? response()->json(['message' => 'Logged in successfully.'])
                     : redirect()->intended(config('fortify.home', '/'));
             }
 
             // New social account
-            if ($this->guard->check()) {
+            if ($guard->check()) {
                 // User is authenticated - link account
                 app(CreatesConnectedAccounts::class)->create($request->user(), $provider, $socialUser);
 
@@ -101,7 +77,7 @@ class OAuthController extends Controller
                     // User exists with this email - link and log in
                     app(CreatesConnectedAccounts::class)->create($user, $provider, $socialUser);
 
-                    $this->guard->login($user, true);
+                    $guard->login($user, true);
 
                     return $request->wantsJson()
                         ? response()->json(['message' => 'Logged in successfully.'])
@@ -116,11 +92,11 @@ class OAuthController extends Controller
                     ? response()->json(['message' => 'Email permission is required. Please allow access to your email address.'], 422)
                     : redirect()->route('login')->with('error', 'Email permission is required. Please allow access to your email address.');
             }
-            
+
             $user = app(CreatesUserFromProvider::class)->create($provider, $socialUser);
-            
-            $this->guard->login($user, true);
-            
+
+            $guard->login($user, true);
+
             return $request->wantsJson()
                 ? response()->json(['message' => 'Account created and logged in successfully.'])
                 : redirect()->intended(config('fortify.home', '/'));
@@ -130,12 +106,9 @@ class OAuthController extends Controller
     /**
      * Validate the provider.
      *
-     * @param  string  $provider
-     * @return void
-     *
      * @throws \InvalidArgumentException
      */
-    protected function validateProvider(string $provider)
+    protected function validateProvider(string $provider): void
     {
         if (! in_array($provider, config('stronghold.providers', []))) {
             throw new \InvalidArgumentException("Invalid provider: {$provider}");

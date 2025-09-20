@@ -62,6 +62,5 @@ return [
     'new_location_confirmation' => [
         'code_length' => 6,
         'code_expiration' => 30, // minutes
-        'check_ip_only' => true, // if false, will use geolocation services
     ],
 ];

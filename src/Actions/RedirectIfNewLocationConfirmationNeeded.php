@@ -2,7 +2,14 @@
 
 namespace Miguilim\LaravelStronghold\Actions;
 
+use App\Models\User;
+
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Http\Request;
+use Miguilim\LaravelStronghold\Stronghold;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Symfony\Component\HttpFoundation\Response;
 
 class RedirectIfNewLocationConfirmationNeeded extends RedirectIfTwoFactorAuthenticatable
 {
@@ -17,32 +24,21 @@ class RedirectIfNewLocationConfirmationNeeded extends RedirectIfTwoFactorAuthent
     {
         $user = $this->validateCredentials($request);
 
-        $userLastIp = $user->last_ip_address ?? $user->ip_address;
-        $currentIp = $request->ip();
-
-        if (! $user->email_verified_at) { // Do not challenge if user is not verified - avoids unexpected redirects
+        if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) { // Do not challenge if user is not verified - avoids unexpected redirects
             return $next($request);
         }
 
-        if (config('stronghold.new_location_confirmation.check_ip_only')) {
-            if ($userLastIp && $userLastIp === $currentIp) {
-                return $next($request);
-            }
-        } else {
-            // TODO
+        if (!Stronghold::needsNewLocationConfirmation($request, $user)) {
+            return $next($request);
         }
 
         return $this->newDeviceConfirmationResponse($request, $user);
     }
 
-     /**
+    /**
      * Get the new device detected response.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  mixed  $user
-     * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function newDeviceConfirmationResponse($request, $user)
+    protected function newDeviceConfirmationResponse(Request $request, User $user): Response
     {
         $confirmationCode = strtoupper(Str::random(config('stronghold.new_location_confirmation.code_length')));
 

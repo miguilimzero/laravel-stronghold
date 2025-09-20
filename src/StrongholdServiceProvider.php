@@ -32,6 +32,17 @@ class StrongholdServiceProvider extends ServiceProvider
     {
         // Bind action implementations to contracts if they exist
         $this->bindActionImplementations();
+
+        // Bind view response implementations
+        $this->app->singleton(
+            \Miguilim\LaravelStronghold\Contracts\ProfileViewResponse::class,
+            \Miguilim\LaravelStronghold\Http\Responses\ProfileViewResponse::class
+        );
+
+        $this->app->singleton(
+            \Miguilim\LaravelStronghold\Contracts\ConfirmNewLocationViewResponse::class,
+            \Miguilim\LaravelStronghold\Http\Responses\ConfirmNewLocationViewResponse::class
+        );
     }
 
     /**

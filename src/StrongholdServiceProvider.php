@@ -21,6 +21,7 @@ use Laravel\Fortify\Actions\AttemptToAuthenticate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Miguilim\LaravelStronghold\Console\Commands\InstallCommand;
 
 
 class StrongholdServiceProvider extends ServiceProvider
@@ -89,15 +90,15 @@ class StrongholdServiceProvider extends ServiceProvider
             return;
         }
 
-        // Add commands here when ready
+        $this->commands([
+            InstallCommand::class,
+        ]);
     }
 
     /**
      * Configure the routes offered by the application.
-     *
-     * @return void
      */
-    protected function configureRoutes()
+    protected function configureRoutes(): void
     {
         if (Fortify::$registersRoutes) {
             Route::group([

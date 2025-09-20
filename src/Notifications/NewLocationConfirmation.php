@@ -41,7 +41,7 @@ class NewLocationConfirmation extends Notification
     public function toMail($notifiable)
     {
         $ipAddress = $this->request->ip();
-        $userAgent = $this->request->userAgent();
+        $userAgent = new \WhichBrowser\Parser($this->request->userAgent());
         $currentDate = '**' . now() . '**';
 
         $mail = (new MailMessage())
@@ -53,7 +53,7 @@ class NewLocationConfirmation extends Notification
 
         $mail = $mail->line(__('Request made at :date.', ['date' => $currentDate]));
 
-        return $mail->line(__('User Agent: :agent.', ['agent' => "**{$userAgent}**"]))
+        return $mail->line(__('User Agent: :agent.', ['agent' => "**{$userAgent->toString()}**"]))
             ->line(__('IP Address: :ip.', ['ip' => "**{$ipAddress}**"]))
             ->line(__('If you did not initiate this request, please change your account password immediately.'));
     }

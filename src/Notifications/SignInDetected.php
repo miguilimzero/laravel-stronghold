@@ -41,7 +41,7 @@ class SignInDetected extends Notification
     public function toMail($notifiable)
     {
         $ipAddress = $this->request->ip();
-        $userAgent = $this->request->userAgent();
+        $userAgent = new \WhichBrowser\Parser($this->request->userAgent());
         $currentDate = '**' . now() . '**';
 
         $mail = (new MailMessage())
@@ -51,7 +51,7 @@ class SignInDetected extends Notification
 
         $mail = $mail->line(__('Request made at :date.', ['date' => $currentDate]));
 
-        return $mail->line(__('User Agent: :agent.', ['agent' => "**{$userAgent}**"]))
+        return $mail->line(__('User Agent: :agent.', ['agent' => "**{$userAgent->toString()}**"]))
             ->line(__('IP Address: :ip.', ['ip' => "**{$ipAddress}**"]))
             ->action(__('Secure Your Account'), route('profile.show'))
             ->line(__('If you did not initiate this request, please secure your account immediately.'));

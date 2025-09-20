@@ -8,8 +8,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\ConfirmPassword;
 use Laravel\Fortify\Features;
@@ -33,17 +31,17 @@ class StrongholdUserController extends Controller
 
         $sessions = collect(
             DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
-                    ->where('user_id', $request->user()->getAuthIdentifier())
-                    ->orderBy('last_activity', 'desc')
-                    ->get()
+                ->where('user_id', $request->user()->getAuthIdentifier())
+                ->orderBy('last_activity', 'desc')
+                ->get()
         )->map(function ($session) use ($request) {
-            $agent = $this->createAgent($session); // TODO
+            $agent = new \WhichBrowser\Parser($session->user_agent);
 
             return (object) [
                 'agent' => [
-                    'is_desktop' => $agent->isDesktop(),
-                    'platform' => $agent->platform(),
-                    'browser' => $agent->browser(),
+                    'is_desktop' => $agent->isType('desktop'),
+                    'platform' => $agent->os->toString(),
+                    'browser' => $agent->browser->toString(),
                 ],
                 'ip_address' => $session->ip_address,
                 'is_current_device' => $session->id === $request->session()->getId(),
@@ -51,11 +49,12 @@ class StrongholdUserController extends Controller
             ];
         });
 
-        // TODO: add connected accounts
+        $connectedAccounts = $request->user()->connectedAccounts ?? collect();
 
         return app(ProfileViewResponse::class, [
             'confirmsTwoFactorAuthentication' => $confirmsTwoFactorAuthentication,
             'sessions' => $sessions,
+            'connectedAccounts' => $connectedAccounts,
         ]);
     }
 
@@ -147,7 +146,7 @@ class StrongholdUserController extends Controller
     public function setPassword(Request $request): RedirectResponse
     {
         $user = $request->user();
-        
+
         if ($user->password) { // Check if user already has a password
             abort(403);
         }

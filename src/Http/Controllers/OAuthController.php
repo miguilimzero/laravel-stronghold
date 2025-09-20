@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 use Miguilim\LaravelStronghold\Models\ConnectedAccount;
 use Miguilim\LaravelStronghold\Contracts\CreatesUserFromProvider;
+use Miguilim\LaravelStronghold\Contracts\CreatesConnectedAccounts;
 
 class OAuthController extends Controller
 {
@@ -84,17 +85,7 @@ class OAuthController extends Controller
             // New social account
             if ($this->guard->check()) {
                 // User is authenticated - link account
-                $connectedAccount->user_id = $request->user()->id;
-                $connectedAccount->fill([
-                    'name' => $socialUser->getName(),
-                    'nickname' => $socialUser->getNickname(),
-                    'email' => $socialUser->getEmail(),
-                    'avatar_path' => $socialUser->getAvatar(),
-                    'token' => $socialUser->token,
-                    'refresh_token' => $socialUser->refreshToken ?? null,
-                    'expires_at' => $socialUser->expiresIn ? now()->addSeconds($socialUser->expiresIn) : null,
-                ]);
-                $connectedAccount->save();
+                app(CreatesConnectedAccounts::class)->create($request->user(), $provider, $socialUser);
 
                 return $request->wantsJson()
                     ? response()->json(['message' => 'Account connected successfully.'])
@@ -108,17 +99,7 @@ class OAuthController extends Controller
 
                 if ($user) {
                     // User exists with this email - link and log in
-                    $connectedAccount->user_id = $user->id;
-                    $connectedAccount->fill([
-                        'name' => $socialUser->getName(),
-                        'nickname' => $socialUser->getNickname(),
-                        'email' => $socialUser->getEmail(),
-                        'avatar_path' => $socialUser->getAvatar(),
-                        'token' => $socialUser->token,
-                        'refresh_token' => $socialUser->refreshToken ?? null,
-                        'expires_at' => $socialUser->expiresIn ? now()->addSeconds($socialUser->expiresIn) : null,
-                    ]);
-                    $connectedAccount->save();
+                    app(CreatesConnectedAccounts::class)->create($user, $provider, $socialUser);
 
                     $this->guard->login($user, true);
 

@@ -8,6 +8,11 @@ use Miguilim\LaravelStronghold\Actions\RedirectIfNewLocationConfirmationNeeded;
 use Miguilim\LaravelStronghold\Http\Controllers\TwoFactorAuthenticatedSessionController;
 use Miguilim\LaravelStronghold\Limiters\StrictLoginRateLimiter;
 
+use Miguilim\LaravelStronghold\Contracts\CreatesConnectedAccounts;
+use Miguilim\LaravelStronghold\Contracts\CreatesUserFromProvider;
+use Miguilim\LaravelStronghold\Contracts\DeletesUsers;
+use Miguilim\LaravelStronghold\Contracts\SetsUserPasswords;
+
 use Laravel\Fortify\{Features, Fortify};
 use Laravel\Fortify\Actions\{CanonicalizeUsername, EnsureLoginIsNotThrottled, PrepareAuthenticatedSession};
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
@@ -20,6 +25,15 @@ use Illuminate\Support\ServiceProvider;
 
 class StrongholdServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        // Bind action implementations to contracts if they exist
+        $this->bindActionImplementations();
+    }
+
     /**
      * Bootstrap any application services.
      */
@@ -49,6 +63,10 @@ class StrongholdServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'stronghold-migrations');
+
+        $this->publishes([
+            __DIR__.'/../stubs' => base_path('stubs'),
+        ], 'stronghold-stubs');
     }
 
     /**
@@ -101,5 +119,24 @@ class StrongholdServiceProvider extends ServiceProvider
             PrepareAuthenticatedSession::class,
             in_array('sign-in-notification', config('stronghold.features', [])) ? NotifySignInDetected::class : null,
         ]));
+    }
+
+    /**
+     * Bind action implementations to contracts if they exist.
+     */
+    protected function bindActionImplementations(): void
+    {
+        $actions = [
+            CreatesConnectedAccounts::class => 'App\\Actions\\Fortify\\CreateConnectedAccount',
+            CreatesUserFromProvider::class => 'App\\Actions\\Fortify\\CreateUserFromProvider',
+            DeletesUsers::class => 'App\\Actions\\Fortify\\DeleteUser',
+            SetsUserPasswords::class => 'App\\Actions\\Fortify\\SetUserPassword',
+        ];
+
+        foreach ($actions as $contract => $implementation) {
+            if (class_exists($implementation)) {
+                $this->app->singleton($contract, $implementation);
+            }
+        }
     }
 }

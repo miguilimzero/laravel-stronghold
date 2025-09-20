@@ -2,8 +2,7 @@
 
 namespace Miguilim\LaravelStronghold\Actions;
 
-use App\Models\User;
-
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Miguilim\LaravelStronghold\Stronghold;
@@ -38,7 +37,7 @@ class RedirectIfNewLocationConfirmationNeeded extends RedirectIfTwoFactorAuthent
     /**
      * Get the new device detected response.
      */
-    protected function newDeviceConfirmationResponse(Request $request, User $user): Response
+    protected function newDeviceConfirmationResponse(Request $request, Authenticatable $user): Response
     {
         $confirmationCode = strtoupper(Str::random(config('stronghold.new_location_confirmation.code_length')));
 

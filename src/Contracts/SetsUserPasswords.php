@@ -2,16 +2,10 @@
 
 namespace Miguilim\LaravelStronghold\Contracts;
 
-use Illuminate\Contracts\Auth\Authenticatable;
-
+/**
+ * @method void set(\Illuminate\Foundation\Auth\User $user, array $input)
+ */
 interface SetsUserPasswords
 {
-    /**
-     * Set the user's password.
-     *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
-     * @param  array  $input
-     * @return void
-     */
-    public function set(Authenticatable $user, array $input): void;
+    //
 }

@@ -2,16 +2,10 @@
 
 namespace Miguilim\LaravelStronghold\Contracts;
 
-use Laravel\Socialite\Contracts\User as ProviderUser;
-
+/**
+ * @method \Illuminate\Foundation\Auth\User create(string $provider, \Laravel\Socialite\Contracts\User $providerUser)
+ */
 interface CreatesUserFromProvider
 {
-    /**
-     * Create a new user from a social provider user.
-     *
-     * @param  string  $provider
-     * @param  \Laravel\Socialite\Contracts\User  $providerUser
-     * @return \Illuminate\Contracts\Auth\Authenticatable
-     */
-    public function create(string $provider, ProviderUser $providerUser);
+    //
 }

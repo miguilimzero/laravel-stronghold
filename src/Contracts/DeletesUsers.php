@@ -2,15 +2,10 @@
 
 namespace Miguilim\LaravelStronghold\Contracts;
 
-use Illuminate\Contracts\Auth\Authenticatable;
-
+/**
+ * @method void delete(\Illuminate\Foundation\Auth\User $user)
+ */
 interface DeletesUsers
 {
-    /**
-     * Delete the given user.
-     *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
-     * @return void
-     */
-    public function delete(Authenticatable $user): void;
+    //
 }

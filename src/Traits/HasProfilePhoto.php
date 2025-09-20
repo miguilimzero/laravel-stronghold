@@ -15,31 +15,19 @@ trait HasProfilePhoto
     /**
      * Sets the users profile photo from a URL.
      */
-    // public function setProfilePhotoFromUrl(string $url): void
-    // {
-    //     $name = pathinfo($url)['basename'];
-    //     file_put_contents($file = "/tmp/{$name}", file_get_contents($url));
-    //     $this->updateProfilePhoto(new UploadedFile($file, $name));
-    // }
+    public function setProfilePhotoFromUrl(string $url): void
+    {
+        $name = pathinfo($url)['basename'];
+        file_put_contents($file = "/tmp/{$name}", file_get_contents($url));
+        $this->updateProfilePhoto(new UploadedFile($file, $name));
+    }
 
     /**
      * Update the user's profile photo.
      */
     public function updateProfilePhoto(UploadedFile $photo): void
     {
-        $manager = new ImageManager(new Driver());
-
-        if ($photo->extension() === 'gif') {
-            $manager->read($photo->get())
-                ->resize(128, 128)
-                ->toGif()
-                ->save($photo->getPathname());
-        } else {
-            $manager->read($photo->get())
-                ->resize(128, 128)
-                ->toJpeg(90)
-                ->save($photo->getPathname());
-        }
+        $this->processProfilePhoto($photo);
 
         tap($this->profile_photo_path, function ($previous) use ($photo) {
             $this->forceFill([
@@ -59,7 +47,7 @@ trait HasProfilePhoto
      */
     public function deleteProfilePhoto(): void
     {
-        if (is_null($this->profile_photo_path)) {
+        if ($this->profile_photo_path === null) {
             return;
         }
 
@@ -96,5 +84,25 @@ trait HasProfilePhoto
     protected function profilePhotoDisk(): string
     {
         return config('stronghold.profile_photo_disk', 'public');
+    }
+
+    /**
+     * Process the profile photo with Intervention Image.
+     */
+    protected function processProfilePhoto(UploadedFile $photo): void
+    {
+        $manager = new ImageManager(new Driver());
+
+        if ($photo->extension() === 'gif') {
+            $manager->read($photo->get())
+                ->resize(128, 128)
+                ->toGif()
+                ->save($photo->getPathname());
+        } else {
+            $manager->read($photo->get())
+                ->resize(128, 128)
+                ->toJpeg(90)
+                ->save($photo->getPathname());
+        }
     }
 }

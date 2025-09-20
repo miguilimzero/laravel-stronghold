@@ -16,14 +16,6 @@ trait HasConnectedAccounts
     }
 
     /**
-     * Determine if the user has any connected accounts.
-     */
-    public function hasConnectedAccounts(): bool
-    {
-        return $this->connectedAccounts()->exists();
-    }
-
-    /**
      * Get a connected account by provider.
      */
     public function getConnectedAccount(string $provider): ?ConnectedAccount
@@ -31,16 +23,6 @@ trait HasConnectedAccounts
         return $this->connectedAccounts()
             ->where('provider', $provider)
             ->first();
-    }
-
-    /**
-     * Determine if the user has a connected account for the given provider.
-     */
-    public function hasConnectedAccount(string $provider): bool
-    {
-        return $this->connectedAccounts()
-            ->where('provider', $provider)
-            ->exists();
     }
 
     /**
@@ -62,13 +44,5 @@ trait HasConnectedAccounts
     {
         // User can disconnect if they have a password or more than one connected account
         return $this->password !== null || $this->connectedAccounts()->count() > 1;
-    }
-
-    /**
-     * Determine if the user needs to set a password.
-     */
-    public function needsPassword(): bool
-    {
-        return $this->password === null;
     }
 }

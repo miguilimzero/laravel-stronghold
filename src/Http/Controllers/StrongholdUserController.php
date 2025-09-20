@@ -2,191 +2,154 @@
 
 namespace Miguilim\LaravelStronghold\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Actions\ConfirmPassword;
+use Laravel\Fortify\Features;
 use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse;
 use Miguilim\LaravelStronghold\Models\ConnectedAccount;
 
 class StrongholdUserController extends Controller
 {
     /**
-     * The guard implementation.
-     *
-     * @var \Illuminate\Contracts\Auth\StatefulGuard
-     */
-    protected $guard;
-
-    /**
-     * Create a new controller instance.
-     *
-     * @param  \Illuminate\Contracts\Auth\StatefulGuard  $guard
-     * @return void
-     */
-    public function __construct(StatefulGuard $guard)
-    {
-        $this->guard = $guard;
-    }
-
-    /**
      * Show the user profile screen.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Miguilim\LaravelStronghold\Contracts\ProfileViewResponse
      */
-    public function show(Request $request)
+    public function show(Request $request): ProfileViewResponse
     {
-        return app(ProfileViewResponse::class);
+        $confirmsTwoFactorAuthentication = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
+
+        $sessions = collect(
+            DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
+                    ->where('user_id', $request->user()->getAuthIdentifier())
+                    ->orderBy('last_activity', 'desc')
+                    ->get()
+        )->map(function ($session) use ($request) {
+            $agent = $this->createAgent($session); // TODO
+
+            return (object) [
+                'agent' => [
+                    'is_desktop' => $agent->isDesktop(),
+                    'platform' => $agent->platform(),
+                    'browser' => $agent->browser(),
+                ],
+                'ip_address' => $session->ip_address,
+                'is_current_device' => $session->id === $request->session()->getId(),
+                'last_active' => Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
+            ];
+        });
+
+        // TODO: add connected accounts
+
+        return app(ProfileViewResponse::class, [
+            'confirmsTwoFactorAuthentication' => $confirmsTwoFactorAuthentication,
+            'sessions' => $sessions,
+        ]);
     }
 
     /**
      * Log out from other browser sessions.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    public function destroyOtherBrowserSessions(Request $request)
+    public function destroyOtherBrowserSessions(Request $request, StatefulGuard $guard): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'string'],
-        ]);
+        $confirmed = app(ConfirmPassword::class)(
+            $guard, $request->user(), $request->password
+        );
 
-        if (! Hash::check($request->password, $request->user()->password)) {
+        if (! $confirmed) {
             throw ValidationException::withMessages([
-                'password' => [__('The provided password is incorrect.')],
+                'password' => __('The password is incorrect.'),
             ]);
         }
 
-        $this->deleteOtherSessionRecords($request);
-
-        return $request->wantsJson()
-            ? response()->json(['message' => 'Other browser sessions have been logged out.'])
-            : back()->with('status', 'other-browser-sessions-destroyed');
-    }
-
-    /**
-     * Delete the other browser session records from storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
-     */
-    protected function deleteOtherSessionRecords(Request $request)
-    {
-        if (config('session.driver') !== 'database') {
-            return;
-        }
+        $guard->logoutOtherDevices($request->password);
 
         DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
             ->where('user_id', $request->user()->getAuthIdentifier())
             ->where('id', '!=', $request->session()->getId())
             ->delete();
+
+        return back(303);
     }
 
     /**
      * Delete the current user's profile photo.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    public function destroyProfilePhoto(Request $request)
+    public function destroyProfilePhoto(Request $request): RedirectResponse
     {
         $request->user()->deleteProfilePhoto();
 
-        return $request->wantsJson()
-            ? response()->json(['message' => 'Profile photo deleted.'])
-            : back()->with('status', 'profile-photo-deleted');
+        return back(303);
     }
 
     /**
      * Delete the current user's account.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    public function destroyUser(Request $request)
+    public function destroy(Request $request, StatefulGuard $guard): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'string'],
-        ]);
+        $confirmed = app(ConfirmPassword::class)(
+            $guard, $request->user(), $request->password
+        );
 
-        $user = $request->user();
-
-        if (! Hash::check($request->password, $user->password)) {
+        if (! $confirmed) {
             throw ValidationException::withMessages([
-                'password' => [__('The provided password is incorrect.')],
+                'password' => __('The password is incorrect.'),
             ]);
         }
 
-        $user->delete();
+        app(DeletesUsers::class)->delete($request->user()->fresh()); // TODO
 
-        $this->guard->logout();
+        $guard->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return $request->wantsJson()
-            ? response()->json(['message' => 'Account deleted successfully.'])
-            : redirect('/')->with('status', 'account-deleted');
+        return redirect('/');
     }
 
     /**
      * Remove the specified connected account.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $id
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    public function destroyConnectedAccount(Request $request, $id)
+    public function destroyConnectedAccount(Request $request, string $id): RedirectResponse
     {
-        $connectedAccount = ConnectedAccount::where('id', $id)
+        $connectedAccount = ConnectedAccount::query()->where('id', $id)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
-        // Ensure user has at least one authentication method
-        if (! $request->user()->password && $request->user()->connectedAccounts()->count() === 1) {
-            return $request->wantsJson()
-                ? response()->json(['message' => 'You must set a password before removing your last connected account.'], 422)
-                : back()->withErrors(['account' => 'You must set a password before removing your last connected account.']);
+        if (! $request->user()->canDisconnectAccount()) {
+            abort(403);
         }
 
         $connectedAccount->delete();
 
-        return $request->wantsJson()
-            ? response()->json(['message' => 'Connected account removed successfully.'])
-            : back()->with('status', 'connected-account-removed');
+        return back(303);
     }
 
     /**
      * Set a password for the authenticated user.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    public function setPassword(Request $request)
+    public function setPassword(Request $request): RedirectResponse
     {
+        if ($user->password) { // Check if user already has a password
+            abort(403);
+        }
+
         $request->validate([
             'password' => ['required', 'string', Password::defaults(), 'confirmed'],
         ]);
 
         $user = $request->user();
 
-        // Check if user already has a password
-        if ($user->password) {
-            return $request->wantsJson()
-                ? response()->json(['message' => 'User already has a password set.'], 422)
-                : back()->withErrors(['password' => 'You already have a password set.']);
-        }
-
         $user->forceFill([
             'password' => Hash::make($request->password),
         ])->save();
 
-        return $request->wantsJson()
-            ? response()->json(['message' => 'Password set successfully.'])
-            : back()->with('status', 'password-set');
+        return back(303);
     }
 }

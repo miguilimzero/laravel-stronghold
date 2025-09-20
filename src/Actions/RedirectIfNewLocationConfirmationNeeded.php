@@ -28,6 +28,8 @@ class RedirectIfNewLocationConfirmationNeeded extends RedirectIfTwoFactorAuthent
             if ($userLastIp && $userLastIp === $currentIp) {
                 return $next($request);
             }
+        } else {
+            // TODO
         }
 
         return $this->newDeviceConfirmationResponse($request, $user);

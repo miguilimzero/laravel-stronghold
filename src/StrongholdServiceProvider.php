@@ -4,14 +4,14 @@ namespace Miguilim\LaravelStronghold;
 
 use Miguilim\LaravelStronghold\Actions\NotifySignInDetected;
 use Miguilim\LaravelStronghold\Actions\RedirectIfNewLocationConfirmationNeeded;
-use Miguilim\LaravelStronghold\Actions\RedirectIfTwoFactorAuthenticatable;
-use Laravel\Fortify\Actions\AttemptToAuthenticate;
 
 use Miguilim\LaravelStronghold\Http\Controllers\TwoFactorAuthenticatedSessionController;
 use Miguilim\LaravelStronghold\Limiters\StrictLoginRateLimiter;
 
 use Laravel\Fortify\{Features, Fortify};
 use Laravel\Fortify\Actions\{CanonicalizeUsername, EnsureLoginIsNotThrottled, PrepareAuthenticatedSession};
+use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Actions\AttemptToAuthenticate;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;

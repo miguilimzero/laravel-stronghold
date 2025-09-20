@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 use Miguilim\LaravelStronghold\Models\ConnectedAccount;
+use Miguilim\LaravelStronghold\Contracts\CreatesUserFromProvider;
 
 class OAuthController extends Controller
 {
@@ -127,15 +128,21 @@ class OAuthController extends Controller
                 }
             }
 
-            // No existing user - redirect to registration
-            session()->put('socialite_provider', [
-                'provider' => $provider,
-                'user' => $socialUser,
-            ]);
-
+            // No existing user - create new user automatically
+            // Check if email is provided
+            if (!$socialUser->getEmail() || empty(trim($socialUser->getEmail()))) {
+                return $request->wantsJson()
+                    ? response()->json(['message' => 'Email permission is required. Please allow access to your email address.'], 422)
+                    : redirect()->route('login')->with('error', 'Email permission is required. Please allow access to your email address.');
+            }
+            
+            $user = app(CreatesUserFromProvider::class)->create($provider, $socialUser);
+            
+            $this->guard->login($user, true);
+            
             return $request->wantsJson()
-                ? response()->json(['message' => 'Please complete registration.', 'redirect' => route('register')], 422)
-                : redirect()->route('register')->with('status', 'complete-registration');
+                ? response()->json(['message' => 'Account created and logged in successfully.'])
+                : redirect()->intended(config('fortify.home', '/'));
         });
     }
 

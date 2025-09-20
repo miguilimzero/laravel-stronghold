@@ -14,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\ConfirmPassword;
 use Laravel\Fortify\Features;
 use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse;
+use Miguilim\LaravelStronghold\Contracts\DeletesUsers;
+use Miguilim\LaravelStronghold\Contracts\SetsUserPasswords;
 use Miguilim\LaravelStronghold\Models\ConnectedAccount;
 
 class StrongholdUserController extends Controller
@@ -103,7 +105,7 @@ class StrongholdUserController extends Controller
             ]);
         }
 
-        app(DeletesUsers::class)->delete($request->user()->fresh()); // TODO
+        app(DeletesUsers::class)->delete($request->user()->fresh());
 
         $guard->logout();
 
@@ -136,19 +138,13 @@ class StrongholdUserController extends Controller
      */
     public function setPassword(Request $request): RedirectResponse
     {
+        $user = $request->user();
+        
         if ($user->password) { // Check if user already has a password
             abort(403);
         }
 
-        $request->validate([
-            'password' => ['required', 'string', Password::defaults(), 'confirmed'],
-        ]);
-
-        $user = $request->user();
-
-        $user->forceFill([
-            'password' => Hash::make($request->password),
-        ])->save();
+        app(SetsUserPasswords::class)->set($user, $request->all());
 
         return back(303);
     }

@@ -4,35 +4,49 @@ namespace Miguilim\LaravelStronghold;
 
 use Closure;
 
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\Request;
+
 class Stronghold
 {
     /**
      * The callback that is responsible for building the profile view response.
+     *
+     * @var Closure(Request $request, array $data): Response|string|null
      */
-    public static callable|string|null $profileViewResponseCallback = null;
+    public static Closure|string|null $profileViewResponseCallback = null;
 
     /**
      * The callback that is responsible for building the confirm new location view response.
+     *
+     * @var Closure(Request $request, array $data): Response|string|null
      */
-    public static callable|string|null $confirmNewLocationViewResponseCallback = null;
+    public static Closure|string|null $confirmNewLocationViewResponseCallback = null;
 
     /**
      * The callback that is responsible for detecting if new location confirmation is needed.
+     *
+     * @var Closure(Request $request, Authenticatable $user): bool|null
      */
-    public static ?callable $detectNewLocationCallback = null;
+    public static ?Closure $detectNewLocationCallback = null;
 
     /**
      * Specify which view should be used as the profile view.
+     *
+     * @param  Closure(Request $request, array $data): Response|string  $view
      */
-    public static function profileView(callable|string $view): void
+    public static function profileView(Closure|string $view): void
     {
         static::$profileViewResponseCallback = $view;
     }
 
     /**
      * Specify which view should be used as the confirm new location view.
+     *
+     * @param  Closure(Request $request, array $data): Response|string  $view
      */
-    public static function confirmNewLocationView(callable|string $view): void
+    public static function confirmNewLocationView(Closure|string $view): void
     {
         static::$confirmNewLocationViewResponseCallback = $view;
     }
@@ -40,7 +54,7 @@ class Stronghold
     /**
      * Get the profile view response callback.
      */
-    public static function profileViewResponse(): callable|string|null
+    public static function profileViewResponse(): Closure|string|null
     {
         return static::$profileViewResponseCallback;
     }
@@ -48,15 +62,17 @@ class Stronghold
     /**
      * Get the confirm new location view response callback.
      */
-    public static function confirmNewLocationViewResponse(): callable|string|null
+    public static function confirmNewLocationViewResponse(): Closure|string|null
     {
         return static::$confirmNewLocationViewResponseCallback;
     }
 
     /**
      * Set the callback that determines if new location confirmation is needed.
+     *
+     * @param  Closure(Request $request, Authenticatable $user): bool  $callback
      */
-    public static function detectNewLocationUsing(callable $callback): void
+    public static function detectNewLocationUsing(Closure $callback): void
     {
         static::$detectNewLocationCallback = $callback;
     }
@@ -64,7 +80,7 @@ class Stronghold
     /**
      * Determine if new location confirmation is needed.
      */
-    public static function needsNewLocationConfirmation($request, $user): bool
+    public static function needsNewLocationConfirmation(Request $request, Authenticatable $user): bool
     {
         if (static::$detectNewLocationCallback) {
             return call_user_func(static::$detectNewLocationCallback, $request, $user);

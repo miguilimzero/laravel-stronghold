@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 trait HasProfilePhoto
 {
+    protected int $profilePictureResolution = 256;
+
     /**
      * Sets the users profile photo from a URL.
      */
@@ -75,7 +77,7 @@ trait HasProfilePhoto
      */
     protected function defaultProfilePhotoUrl(): string
     {
-        return 'https://www.gravatar.com/avatar/' . md5($this->email) . '?s=128&d=retro&r=g';
+        return 'https://www.gravatar.com/avatar/' . md5($this->email) . '?s=' . $this->profilePictureResolution . '&d=retro&r=g';
     }
 
     /**
@@ -95,12 +97,12 @@ trait HasProfilePhoto
 
         if ($photo->extension() === 'gif') {
             $manager->read($photo->get())
-                ->resize(128, 128)
+                ->resize($this->profilePictureResolution, $this->profilePictureResolution)
                 ->toGif()
                 ->save($photo->getPathname());
         } else {
             $manager->read($photo->get())
-                ->resize(128, 128)
+                ->resize($this->profilePictureResolution, $this->profilePictureResolution)
                 ->toJpeg(90)
                 ->save($photo->getPathname());
         }

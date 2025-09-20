@@ -27,6 +27,10 @@ class StrongholdUserController extends Controller
     {
         $confirmsTwoFactorAuthentication = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
 
+        if (config('session.driver') !== 'database') {
+            throw new \RuntimeException('Session driver must be set to "database" to view browser sessions.');
+        }
+
         $sessions = collect(
             DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
                     ->where('user_id', $request->user()->getAuthIdentifier())
@@ -68,6 +72,10 @@ class StrongholdUserController extends Controller
             throw ValidationException::withMessages([
                 'password' => __('The password is incorrect.'),
             ]);
+        }
+
+        if (config('session.driver') !== 'database') {
+            throw new \RuntimeException('Session driver must be set to "database" to logout other browser sessions.');
         }
 
         $guard->logoutOtherDevices($request->password);

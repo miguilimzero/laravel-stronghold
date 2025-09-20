@@ -76,7 +76,7 @@ class StrongholdServiceProvider extends ServiceProvider
         ], 'stronghold-migrations');
 
         $this->publishes([
-            __DIR__.'/../stubs' => base_path('stubs'),
+            __DIR__.'/../stubs/Actions' => base_path('app/Actions/Fortify'),
         ], 'stronghold-stubs');
     }
 

@@ -1,0 +1,38 @@
+{
+  "name": "miguilim/laravel-stronghold",
+  "description": "An extended version of Laravel Fortify with profile management, social authentication, and enhanced security features.",
+  "keywords": [
+    "laravel",
+    "fortify",
+    "authentication",
+    "oauth",
+    "socialite",
+    "profile",
+    "security"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": "^8.1",
+    "illuminate/support": "^10.0|^11.0",
+    "illuminate/contracts": "^10.0|^11.0",
+    "illuminate/database": "^10.0|^11.0",
+    "illuminate/http": "^10.0|^11.0",
+    "illuminate/notifications": "^10.0|^11.0",
+    "illuminate/validation": "^10.0|^11.0",
+    "laravel/fortify": "^1.19",
+    "laravel/socialite": "^5.11",
+    "intervention/image": "^3.11"
+  },
+  "autoload": {
+    "psr-4": {
+      "Miguilim\\LaravelStronghold\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Miguilim\\LaravelStronghold\\StrongholdServiceProvider"
+      ]
+    }
+  }
+}

@@ -7,7 +7,7 @@ Laravel Stronghold is an extended version of Laravel Fortify that adds profile m
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
-  - [Editing Profile Action](#editing-profiel-action)
+  - [Editing Profile Action](#editing-profile-action)
   - [Enabling Features](#enabling-features)
   - [OAuth Authentication](#oauth-authentication)
   - [User Traits](#user-traits)

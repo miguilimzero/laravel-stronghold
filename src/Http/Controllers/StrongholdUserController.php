@@ -63,16 +63,6 @@ class StrongholdUserController extends Controller
      */
     public function destroyOtherBrowserSessions(Request $request, StatefulGuard $guard): RedirectResponse
     {
-        $confirmed = app(ConfirmPassword::class)(
-            $guard, $request->user(), $request->password
-        );
-
-        if (! $confirmed) {
-            throw ValidationException::withMessages([
-                'password' => __('The password is incorrect.'),
-            ]);
-        }
-
         if (config('session.driver') !== 'database') {
             throw new \RuntimeException('Session driver must be set to "database" to logout other browser sessions.');
         }
@@ -100,18 +90,8 @@ class StrongholdUserController extends Controller
     /**
      * Delete the current user's account.
      */
-    public function destroy(Request $request, StatefulGuard $guard): RedirectResponse
+    public function destroyUser(Request $request, StatefulGuard $guard): RedirectResponse
     {
-        $confirmed = app(ConfirmPassword::class)(
-            $guard, $request->user(), $request->password
-        );
-
-        if (! $confirmed) {
-            throw ValidationException::withMessages([
-                'password' => __('The password is incorrect.'),
-            ]);
-        }
-
         app(DeletesUsers::class)->delete($request->user()->fresh());
 
         $guard->logout();
@@ -143,7 +123,7 @@ class StrongholdUserController extends Controller
     /**
      * Set a password for the authenticated user.
      */
-    public function setPassword(Request $request): RedirectResponse
+    public function passwordStore(Request $request): RedirectResponse
     {
         $user = $request->user();
 

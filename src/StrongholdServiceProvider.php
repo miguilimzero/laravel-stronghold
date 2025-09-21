@@ -6,7 +6,6 @@ use Miguilim\LaravelStronghold\Actions\NotifySignInDetected;
 use Miguilim\LaravelStronghold\Actions\RedirectIfNewLocationConfirmationNeeded;
 
 use Miguilim\LaravelStronghold\Http\Controllers\TwoFactorAuthenticatedSessionController;
-use Miguilim\LaravelStronghold\Limiters\StrictLoginRateLimiter;
 
 use Miguilim\LaravelStronghold\Contracts\CreatesConnectedAccounts;
 use Miguilim\LaravelStronghold\Contracts\CreatesUserFromProvider;
@@ -119,8 +118,6 @@ class StrongholdServiceProvider extends ServiceProvider
     public function fortifyServiceProviderBoot(): void
     {
         $this->app->singleton(\Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController::class, TwoFactorAuthenticatedSessionController::class);
-
-        $this->app->singleton(\Laravel\Fortify\LoginRateLimiter::class, StrictLoginRateLimiter::class);
 
         Fortify::authenticateThrough(fn (Request $request) => array_filter([
             config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,

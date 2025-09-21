@@ -27,6 +27,9 @@ class InstallCommand extends Command
     {
         $this->info('Installing Laravel Stronghold...');
 
+        $this->info('Executing fortify install command...');
+        $this->call('fortify:install');
+
         $this->info('Publishing configuration...');
         $this->call('vendor:publish', ['--tag' => 'stronghold-config']);
 

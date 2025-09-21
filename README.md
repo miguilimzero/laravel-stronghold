@@ -23,7 +23,7 @@ You can install the package via composer:
 composer require miguilim/laravel-stronghold
 ```
 > [!NOTE]
-> If you have Laravel Fortify installed in your `composer.json`, please remove it as this package extends Fortify's functionality. If Fortify is not installed, you'll need to run `php artisan fortify:install` before running the command below.
+> If you have Laravel Fortify installed in your `composer.json`, please remove it as this package extends Fortify's functionality.
 
 After installation, run the install command:
 

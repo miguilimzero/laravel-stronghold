@@ -12,6 +12,7 @@ Route::group(['middleware' => config('fortify.middleware', ['web'])], function (
     $enableViews = config('fortify.views', true);
 
     $limiter = config('fortify.limiters.login');
+    $limiterTwoFactor = config('fortify.limiters.two-factor');
 
     if ($enableViews) {
         Route::get(RoutePath::for('profile.show', '/user/profile'), [StrongholdUserController::class, 'show'])
@@ -49,7 +50,7 @@ Route::group(['middleware' => config('fortify.middleware', ['web'])], function (
             Route::get(RoutePath::for('oauth.callback', '/oauth/{provider}/callback'), [OAuthController::class, 'handleProviderCallback'])
                 ->middleware(array_filter([
                     'guest:' . config('fortify.guard'),
-                    $limiter ? "throttle:{$limiter}" : null,
+                    $limiterTwoFactor ? "throttle:{$limiterTwoFactor}" : null,
                 ]))
                 ->name('oauth.callback');
 

@@ -112,16 +112,19 @@ class User extends Authenticatable
 
 ### Customizing Views
 
-Register custom views in your `AppServiceProvider`:
+Register custom views in your `FortifyServiceProvider`:
 
 ```php
 use Miguilim\LaravelStronghold\Stronghold;
 
-Stronghold::profileView(function () {
-    return view('profile.show');
+Stronghold::profileView(function (array $data) {
+    return view('profile.show', $data); // 'confirmsTwoFactorAuthentication', 'sessions', 'connectedAccounts'
 });
 
-Stronghold::confirmNewLocationView('auth.confirm-location'); // Optional, only if you will use the feature
+// Optional, only if you will use the confirm-new-location feature
+Stronghold::confirmNewLocationView(function () {
+    return view('auth.confirm-location');
+});
 ```
 
 ### Custom New Location Detection

@@ -7,6 +7,7 @@ Laravel Stronghold is an extended version of Laravel Fortify that adds profile m
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
+  - [Editing Profile Action](#editing-profiel-action)
   - [Enabling Features](#enabling-features)
   - [OAuth Authentication](#oauth-authentication)
   - [User Traits](#user-traits)
@@ -71,6 +72,40 @@ GOOGLE_CLIENT_SECRET=
 ```
 
 ## Usage
+
+### Editing Profile Action
+
+This package adds an option to the user to upload a profile photo. You need to change the Fortify `UpdateUserProfileInformation` to support that:
+
+```php
+Validator::make($input, [
+    'name' => ['required', 'string', 'max:255'],
+
+    'email' => [
+        'required',
+        'string',
+        'email',
+        'max:255',
+        Rule::unique('users')->ignore($user->id),
+    ],
+
+    'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,gif', 'max:2048'],
+])->validateWithBag('updateProfileInformation');
+
+if (isset($input['photo'])) {
+    $user->updateProfilePhoto($input['photo']);
+}
+
+if ($input['email'] !== $user->email &&
+    $user instanceof MustVerifyEmail) {
+    $this->updateVerifiedUser($user, $input);
+} else {
+    $user->forceFill([
+        'name' => $input['name'],
+        'email' => $input['email'],
+    ])->save();
+}
+```
 
 ### Enabling Features
 

@@ -11,6 +11,7 @@ use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse;
 use Miguilim\LaravelStronghold\Contracts\DeletesUsers;
 use Miguilim\LaravelStronghold\Contracts\SetsUserPasswords;
 use Miguilim\LaravelStronghold\Models\ConnectedAccount;
+use Miguilim\LaravelStronghold\Stronghold;
 
 class StrongholdUserController extends Controller
 {
@@ -38,7 +39,7 @@ class StrongholdUserController extends Controller
             ->where('id', '!=', $request->session()->getId())
             ->delete();
 
-        return back(303);
+        return back(303)->with('status', Stronghold::OTHER_BROWSER_SESSIONS_DESTROYED);
     }
 
     /**
@@ -48,7 +49,7 @@ class StrongholdUserController extends Controller
     {
         $request->user()->deleteProfilePhoto();
 
-        return back(303);
+        return back(303)->with('status', Stronghold::PROFILE_PHOTO_DESTROYED);
     }
 
     /**
@@ -81,7 +82,7 @@ class StrongholdUserController extends Controller
 
         $connectedAccount->delete();
 
-        return back(303);
+        return back(303)->with('status', Stronghold::SOCIALITE_ACCOUNT_DESTROYED);
     }
 
     /**
@@ -97,6 +98,6 @@ class StrongholdUserController extends Controller
 
         app(SetsUserPasswords::class)->set($user, $request->all());
 
-        return back(303);
+        return back(303)->with('status', Stronghold::PASSWORD_SET);
     }
 }

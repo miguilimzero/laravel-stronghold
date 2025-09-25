@@ -52,7 +52,7 @@ class OAuthController extends Controller
 
             app(CreatesConnectedAccounts::class)->create($user, $provider, $socialUser);
 
-            return redirect()->route('profile.show')->with('status', Stronghold::ACCOUNT_CONNECTED);
+            return redirect()->route('profile.show')->with('status', Stronghold::SOCIALITE_ACCOUNT_CONNECTED);
         }
 
         // User is trying to login (or create a new account)

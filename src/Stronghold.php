@@ -16,7 +16,12 @@ use Carbon\Carbon;
 
 class Stronghold
 {
-    public const string ACCOUNT_CONNECTED = 'account-connected';
+    public const string OTHER_BROWSER_SESSIONS_DESTROYED = 'other-browser-sessions-destroyed';
+    public const string PROFILE_PHOTO_DESTROYED = 'profile-photo-destroyed';
+    public const string SOCIALITE_ACCOUNT_CONNECTED = 'socialite-account-connected';
+    public const string SOCIALITE_ACCOUNT_DESTROYED = 'socialite-account-destroyed';
+    public const string PASSWORD_SET = 'password-set';
+
     /**
      * The callback that is responsible for detecting if new location confirmation is needed.
      *

@@ -67,7 +67,7 @@ class NewLocationAuthenticatedSessionController extends Controller
                 ]);
             }
 
-            return redirect()->route('confirm-new-location.login')->withErrors([$key => $message]);
+            return redirect()->route('confirm-location.login')->withErrors([$key => $message]);
         }
 
         if (in_array('sign-in-notification', config('stronghold.features', []))) {

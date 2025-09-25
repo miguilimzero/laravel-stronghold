@@ -53,7 +53,7 @@ class RedirectIfNewLocationConfirmationNeeded extends RedirectIfTwoFactorAuthent
         $user->notify(new \Miguilim\LaravelStronghold\Notifications\NewLocationConfirmation($request, $confirmationCode));
 
         return $request->wantsJson()
-                    ? response()->json(['confirm_new_location' => true])
-                    : redirect()->route('confirm-new-location.login');
+                    ? response()->json(['confirm_location' => true])
+                    : redirect()->route('confirm-location.login');
     }
 }

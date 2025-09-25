@@ -8,8 +8,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
-use Laravel\Fortify\Actions\ConfirmPassword;
 use Laravel\Fortify\Features;
 use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse;
 use Miguilim\LaravelStronghold\Contracts\DeletesUsers;
@@ -23,39 +21,7 @@ class StrongholdUserController extends Controller
      */
     public function show(Request $request): ProfileViewResponse
     {
-        $confirmsTwoFactorAuthentication = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
-
-        if (config('session.driver') !== 'database') {
-            throw new \RuntimeException('Session driver must be set to "database" to view browser sessions.');
-        }
-
-        $sessions = collect(
-            DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
-                ->where('user_id', $request->user()->getAuthIdentifier())
-                ->orderBy('last_activity', 'desc')
-                ->get()
-        )->map(function ($session) use ($request) {
-            $agent = new \WhichBrowser\Parser($session->user_agent);
-
-            return (object) [
-                'agent' => [
-                    'is_desktop' => $agent->isType('desktop'),
-                    'platform' => $agent->os->toString(),
-                    'browser' => $agent->browser->toString(),
-                ],
-                'ip_address' => $session->ip_address,
-                'is_current_device' => $session->id === $request->session()->getId(),
-                'last_active' => Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
-            ];
-        });
-
-        $connectedAccounts = $request->user()->getConnectedProviders();
-
-        return app(ProfileViewResponse::class, [
-            'confirmsTwoFactorAuthentication' => $confirmsTwoFactorAuthentication,
-            'sessions' => $sessions,
-            'connectedAccounts' => $connectedAccounts,
-        ]);
+        return app(ProfileViewResponse::class);
     }
 
     /**

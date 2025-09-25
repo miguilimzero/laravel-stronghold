@@ -4,28 +4,19 @@ namespace Miguilim\LaravelStronghold;
 
 use Closure;
 
+use Laravel\Fortify\Http\Responses\SimpleViewResponse;
+use Miguilim\LaravelStronghold\Contracts\ConfirmLocationViewResponse;
+use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Laravel\Fortify\Features;
+use Carbon\Carbon;
 
 class Stronghold
 {
     public const string ACCOUNT_CONNECTED = 'account-connected';
-
-    /**
-     * The callback that is responsible for building the profile view response.
-     *
-     * @var Closure(Request $request, array $data): Response|string|null
-     */
-    public static Closure|string|null $profileViewResponseCallback = null;
-
-    /**
-     * The callback that is responsible for building the confirm new location view response.
-     *
-     * @var Closure(Request $request, array $data): Response|string|null
-     */
-    public static Closure|string|null $confirmLocationViewResponseCallback = null;
-
     /**
      * The callback that is responsible for detecting if new location confirmation is needed.
      *
@@ -40,7 +31,49 @@ class Stronghold
      */
     public static function profileView(Closure|string $view): void
     {
-        static::$profileViewResponseCallback = $view;
+        app()->singleton(ProfileViewResponse::class, function () use ($view) {
+            if (config('session.driver') !== 'database') {
+                throw new \RuntimeException('Session driver must be set to "database" to view browser sessions.');
+            }
+
+            $sessions = collect(
+                DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
+                    ->where('user_id', request()->user()->getAuthIdentifier())
+                    ->orderBy('last_activity', 'desc')
+                    ->get()
+            )->map(function ($session) {
+                $agent = new \WhichBrowser\Parser($session->user_agent);
+
+                return (object) [
+                    'agent' => [
+                        'is_desktop' => $agent->isType('desktop'),
+                        'platform' => $agent->os->toString(),
+                        'browser' => $agent->browser->toString(),
+                    ],
+                    'ip_address' => $session->ip_address,
+                    'is_current_device' => $session->id === request()->session()->getId(),
+                    'last_active' => Carbon::createFromTimestamp($session->last_activity)->diffForHumans(),
+                ];
+            });
+
+            $props = [
+                'sessions' => $sessions,
+                'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
+                'connectedAccounts' => request()->user()->getConnectedProviders(),
+            ];
+
+            if (! is_callable($view) || is_string($view)) {
+                return view($view, $props);
+            }
+
+            $response = call_user_func($view, $props);
+
+            if ($response instanceof Responsable) {
+                return $response->toResponse($view);
+            }
+
+            return $response;
+        });
     }
 
     /**
@@ -50,25 +83,10 @@ class Stronghold
      */
     public static function confirmLocationView(Closure|string $view): void
     {
-        static::$confirmLocationViewResponseCallback = $view;
+        app()->singleton(ConfirmLocationViewResponse::class, function () use ($view) {
+            return new SimpleViewResponse($view);
+        });
     }
-
-    /**
-     * Get the profile view response callback.
-     */
-    public static function profileViewResponse(): Closure|string|null
-    {
-        return static::$profileViewResponseCallback;
-    }
-
-    /**
-     * Get the confirm new location view response callback.
-     */
-    public static function confirmLocationViewResponse(): Closure|string|null
-    {
-        return static::$confirmLocationViewResponseCallback;
-    }
-
     /**
      * Set the callback that determines if new location confirmation is needed.
      *

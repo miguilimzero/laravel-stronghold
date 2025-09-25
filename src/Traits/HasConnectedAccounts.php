@@ -28,7 +28,7 @@ trait HasConnectedAccounts
     /**
      * Determine if the user can disconnect the given account.
      */
-    public function canDisconnectAccount(string $provider): bool
+    public function canDisconnectAccount(): bool
     {
         // User can disconnect if they have a password or more than one connected account
         return $this->password !== null || $this->connectedAccounts()->count() > 1;

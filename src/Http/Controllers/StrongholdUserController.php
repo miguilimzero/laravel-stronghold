@@ -2,13 +2,11 @@
 
 namespace Miguilim\LaravelStronghold\Http\Controllers;
 
-use Carbon\Carbon;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Laravel\Fortify\Features;
 use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse;
 use Miguilim\LaravelStronghold\Contracts\DeletesUsers;
 use Miguilim\LaravelStronghold\Contracts\SetsUserPasswords;
@@ -19,7 +17,7 @@ class StrongholdUserController extends Controller
     /**
      * Show the user profile screen.
      */
-    public function show(Request $request): ProfileViewResponse
+    public function show(Request $request): mixed
     {
         return app(ProfileViewResponse::class);
     }

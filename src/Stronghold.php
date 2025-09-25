@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 
 class Stronghold
 {
+    public const string ACCOUNT_CONNECTED = 'account-connected';
+
     /**
      * The callback that is responsible for building the profile view response.
      *

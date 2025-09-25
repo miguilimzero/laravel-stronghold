@@ -12,10 +12,23 @@ return [
     |
     */
 
-    'providers' => [
+    'socialite_providers' => [
         'github',
         'google',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | OAuth Remember
+    |--------------------------------------------------------------------------
+    |
+    | This option controls whether users should be "remembered" by the
+    | application when logging in via OAuth providers. When enabled,
+    | users will remain logged in for an extended period of time.
+    |
+    */
+
+    'socialite_remember' => true,
 
     /*
     |--------------------------------------------------------------------------

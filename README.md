@@ -119,6 +119,12 @@ Configure which features to enable in `config/stronghold.php`:
 ],
 ```
 
+> [!IMPORTANT]
+> The `confirm-new-location` feature is not applied when:
+> - The user has two-factor authentication (2FA) enabled
+> - The user is logging in via OAuth providers
+
+
 ### OAuth Authentication
 
 Users can authenticate using OAuth providers:

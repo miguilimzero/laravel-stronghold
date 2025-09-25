@@ -28,7 +28,7 @@ class StrongholdUserController extends Controller
     /**
      * Log out from other browser sessions.
      */
-    public function destroyOtherBrowserSessions(Request $request, StatefulGuard $guard): RedirectResponse
+    public function destroyOtherBrowserSessions(Request $request, StatefulGuard $guard): mixed
     {
         $confirmed = app(ConfirmPassword::class)(
             $guard, $request->user(), $request->input('password')

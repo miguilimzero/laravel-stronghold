@@ -19,9 +19,13 @@ trait HasProfilePhoto
      */
     public function setProfilePhotoFromUrl(string $url): void
     {
-        $name = pathinfo($url)['basename'];
-        file_put_contents($file = "/tmp/{$name}", file_get_contents($url));
-        $this->updateProfilePhoto(new UploadedFile($file, $name));
+        file_put_contents($file = sys_get_temp_dir().'/'.uniqid('tmp_profile_photo_', true), file_get_contents($url));
+
+        $this->updateProfilePhoto(new UploadedFile(
+            path: $file,
+            originalName: pathinfo($url)['basename'],
+            test: true // This is here to bypass the isValid() method which is invalidating this because because is not really "uploaded"
+        ));
     }
 
     /**

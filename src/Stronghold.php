@@ -48,7 +48,7 @@ class Stronghold
      *
      * @param  Closure(Request $request, array $data): Response|string  $view
      */
-    public static function confirmNewLocationView(Closure|string $view): void
+    public static function confirmLocationView(Closure|string $view): void
     {
         static::$confirmLocationViewResponseCallback = $view;
     }

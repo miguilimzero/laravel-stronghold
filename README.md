@@ -157,7 +157,7 @@ Stronghold::profileView(function (array $data) {
 });
 
 // Optional, only if you will use the confirm-new-location feature
-Stronghold::confirmNewLocationView(function () {
+Stronghold::confirmLocationView(function () {
     return view('auth.confirm-location');
 });
 ```

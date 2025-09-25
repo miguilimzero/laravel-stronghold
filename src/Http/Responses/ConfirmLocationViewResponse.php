@@ -4,6 +4,7 @@ namespace Miguilim\LaravelStronghold\Http\Responses;
 
 use Miguilim\LaravelStronghold\Contracts\ConfirmLocationViewResponse as ConfirmLocationViewResponseContract;
 use Miguilim\LaravelStronghold\Stronghold;
+use Illuminate\Contracts\Support\Responsable;
 
 class ConfirmLocationViewResponse implements ConfirmLocationViewResponseContract
 {
@@ -27,14 +28,16 @@ class ConfirmLocationViewResponse implements ConfirmLocationViewResponseContract
     {
         $callback = Stronghold::confirmLocationViewResponse();
 
-        if ($callback instanceof \Closure) {
-            return call_user_func($callback, $request, $this->data);
-        }
-
-        if (is_string($callback)) {
+        if (! is_callable($callback) || is_string($callback)) {
             return view($callback, $this->data);
         }
 
-        throw new \InvalidArgumentException('No valid confirm location view response configured.');
+        $response = call_user_func($callback, $request, $this->data);
+
+        if ($response instanceof Responsable) {
+            return $response->toResponse($request);
+        }
+
+        return $response;
     }
 }

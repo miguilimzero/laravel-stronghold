@@ -4,6 +4,7 @@ namespace Miguilim\LaravelStronghold\Http\Responses;
 
 use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse as ProfileViewResponseContract;
 use Miguilim\LaravelStronghold\Stronghold;
+use Illuminate\Contracts\Support\Responsable;
 
 class ProfileViewResponse implements ProfileViewResponseContract
 {
@@ -27,14 +28,16 @@ class ProfileViewResponse implements ProfileViewResponseContract
     {
         $callback = Stronghold::profileViewResponse();
 
-        if ($callback instanceof \Closure) {
-            return call_user_func($callback, $request, $this->data);
-        }
-
-        if (is_string($callback)) {
+        if (! is_callable($callback) || is_string($callback)) {
             return view($callback, $this->data);
         }
 
-        throw new \InvalidArgumentException('No valid profile view response configured.');
+        $response = call_user_func($callback, $request, $this->data);
+
+        if ($response instanceof Responsable) {
+            return $response->toResponse($request);
+        }
+
+        return $response;
     }
 }

@@ -7,7 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\FailedPasswordConfirmationResponse;
 use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse;
 use Miguilim\LaravelStronghold\Contracts\DeletesUsers;
 use Miguilim\LaravelStronghold\Contracts\SetsUserPasswords;
@@ -31,20 +31,18 @@ class StrongholdUserController extends Controller
     public function destroyOtherBrowserSessions(Request $request, StatefulGuard $guard): RedirectResponse
     {
         $confirmed = app(ConfirmPassword::class)(
-            $guard, $request->user(), $request->password
+            $guard, $request->user(), $request->input('password')
         );
 
         if (! $confirmed) {
-            throw ValidationException::withMessages([
-                'password' => __('The password is incorrect.'),
-            ]);
+            return app(FailedPasswordConfirmationResponse::class);
         }
 
         if (config('session.driver') !== 'database') {
             throw new \RuntimeException('Session driver must be set to "database" to logout other browser sessions.');
         }
 
-        $guard->logoutOtherDevices($request->password);
+        $guard->logoutOtherDevices($request->input('password'));
 
         DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
             ->where('user_id', $request->user()->getAuthIdentifier())

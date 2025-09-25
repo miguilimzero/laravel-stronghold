@@ -2,10 +2,10 @@
 
 namespace Miguilim\LaravelStronghold\Http\Responses;
 
-use Miguilim\LaravelStronghold\Contracts\ConfirmNewLocationViewResponse as ConfirmNewLocationViewResponseContract;
+use Miguilim\LaravelStronghold\Contracts\ConfirmLocationViewResponse as ConfirmLocationViewResponseContract;
 use Miguilim\LaravelStronghold\Stronghold;
 
-class ConfirmNewLocationViewResponse implements ConfirmNewLocationViewResponseContract
+class ConfirmLocationViewResponse implements ConfirmLocationViewResponseContract
 {
     /**
      * The data to pass to the view.
@@ -23,9 +23,9 @@ class ConfirmNewLocationViewResponse implements ConfirmNewLocationViewResponseCo
     /**
      * Create an HTTP response that represents the object.
      */
-    public function toResponse($request): \Symfony\Component\HttpFoundation\Response
+    public function toResponse($request): mixed
     {
-        $callback = Stronghold::confirmNewLocationViewResponse();
+        $callback = Stronghold::confirmLocationViewResponse();
 
         if ($callback instanceof \Closure) {
             return call_user_func($callback, $request, $this->data);
@@ -35,6 +35,6 @@ class ConfirmNewLocationViewResponse implements ConfirmNewLocationViewResponseCo
             return view($callback, $this->data);
         }
 
-        return view('stronghold.confirm-new-location', $this->data);
+        throw new \InvalidArgumentException('No valid confirm location view response configured.');
     }
 }

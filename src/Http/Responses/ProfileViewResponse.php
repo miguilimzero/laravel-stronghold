@@ -23,7 +23,7 @@ class ProfileViewResponse implements ProfileViewResponseContract
     /**
      * Create an HTTP response that represents the object.
      */
-    public function toResponse($request): \Symfony\Component\HttpFoundation\Response
+    public function toResponse($request): mixed
     {
         $callback = Stronghold::profileViewResponse();
 
@@ -35,6 +35,6 @@ class ProfileViewResponse implements ProfileViewResponseContract
             return view($callback, $this->data);
         }
 
-        return view('stronghold.profile', $this->data);
+        throw new \InvalidArgumentException('No valid profile view response configured.');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Miguilim\LaravelStronghold\Http\Controllers;
 
-use Miguilim\LaravelStronghold\Contracts\ConfirmNewLocationViewResponse;
+use Miguilim\LaravelStronghold\Contracts\ConfirmLocationViewResponse;
 use Miguilim\LaravelStronghold\Http\Requests\ConfirmNewLocationLoginRequest;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -42,7 +42,7 @@ class NewLocationAuthenticatedSessionController extends Controller
             throw new HttpResponseException(redirect()->route('login'));
         }
 
-        return app(ConfirmNewLocationViewResponse::class);
+        return app(ConfirmLocationViewResponse::class);
     }
 
     /**

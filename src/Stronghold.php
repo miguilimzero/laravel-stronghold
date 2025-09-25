@@ -24,7 +24,7 @@ class Stronghold
      *
      * @var Closure(Request $request, array $data): Response|string|null
      */
-    public static Closure|string|null $confirmNewLocationViewResponseCallback = null;
+    public static Closure|string|null $confirmLocationViewResponseCallback = null;
 
     /**
      * The callback that is responsible for detecting if new location confirmation is needed.
@@ -50,7 +50,7 @@ class Stronghold
      */
     public static function confirmNewLocationView(Closure|string $view): void
     {
-        static::$confirmNewLocationViewResponseCallback = $view;
+        static::$confirmLocationViewResponseCallback = $view;
     }
 
     /**
@@ -64,9 +64,9 @@ class Stronghold
     /**
      * Get the confirm new location view response callback.
      */
-    public static function confirmNewLocationViewResponse(): Closure|string|null
+    public static function confirmLocationViewResponse(): Closure|string|null
     {
-        return static::$confirmNewLocationViewResponseCallback;
+        return static::$confirmLocationViewResponseCallback;
     }
 
     /**

@@ -40,8 +40,8 @@ class StrongholdServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(
-            \Miguilim\LaravelStronghold\Contracts\ConfirmNewLocationViewResponse::class,
-            \Miguilim\LaravelStronghold\Http\Responses\ConfirmNewLocationViewResponse::class
+            \Miguilim\LaravelStronghold\Contracts\ConfirmLocationViewResponse::class,
+            \Miguilim\LaravelStronghold\Http\Responses\ConfirmLocationViewResponse::class
         );
     }
 

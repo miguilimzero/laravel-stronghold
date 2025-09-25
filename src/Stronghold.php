@@ -61,9 +61,13 @@ class Stronghold
                 ];
             });
 
+            $hasSocialite = in_array('socialite', config('stronghold.features', []));
+
             $props = [
                 'sessions' => $sessions,
-                'connectedAccounts' => request()->user()->connectedAccounts,
+                'socialite' => $hasSocialite,
+                'socialiteProviders' => $hasSocialite ? config('stronghold.socialite_providers', []) : [],
+                'connectedAccounts' => $hasSocialite ? request()->user()->connectedAccounts : [],
                 'twoFactorAuthentication' => Features::enabled(Features::twoFactorAuthentication()),
                 'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
                 'userHasPassword' => request()->user()->password !== null,

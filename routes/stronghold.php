@@ -28,8 +28,8 @@ Route::group(['middleware' => config('fortify.middleware', ['web'])], function (
         ->name('current-user-photo.destroy');
 
     Route::delete(RoutePath::for('other-browser-sessions.destroy', '/user/other-browser-sessions'), [StrongholdUserController::class, 'destroyOtherBrowserSessions'])
-        ->middleware([$authMiddleware, 'password.confirm'])
-        ->name('other-browser-sessions.destroy'); // Keeping the same name as Jetstream
+        ->middleware([$authMiddleware]) // Not using 'confirm.password' as this route confirms the password on its code
+        ->name('other-browser-sessions.destroy');
 
     Route::delete(RoutePath::for('current-user.destroy', '/user'), [StrongholdUserController::class, 'destroyUser'])
         ->middleware([$authMiddleware, 'password.confirm'])
@@ -61,7 +61,7 @@ Route::group(['middleware' => config('fortify.middleware', ['web'])], function (
                 ->name('oauth.callback'); // guest & auth access
 
         Route::delete(RoutePath::for('connected-accounts.destroy', '/user/connected-account/{id}'), [StrongholdUserController::class, 'destroyConnectedAccount'])
-            ->middleware([$authMiddleware])
+            ->middleware([$authMiddleware, 'password.confirm'])
             ->name('connected-accounts.destroy');
 
         Route::put(RoutePath::for('user-password.set', '/user/set-password'), [StrongholdUserController::class, 'passwordSet'])

@@ -7,11 +7,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse;
 use Miguilim\LaravelStronghold\Contracts\DeletesUsers;
 use Miguilim\LaravelStronghold\Contracts\SetsUserPasswords;
 use Miguilim\LaravelStronghold\Models\ConnectedAccount;
 use Miguilim\LaravelStronghold\Stronghold;
+use Laravel\Fortify\Actions\ConfirmPassword;
 
 class StrongholdUserController extends Controller
 {
@@ -28,6 +30,16 @@ class StrongholdUserController extends Controller
      */
     public function destroyOtherBrowserSessions(Request $request, StatefulGuard $guard): RedirectResponse
     {
+        $confirmed = app(ConfirmPassword::class)(
+            $guard, $request->user(), $request->password
+        );
+
+        if (! $confirmed) {
+            throw ValidationException::withMessages([
+                'password' => __('The password is incorrect.'),
+            ]);
+        }
+
         if (config('session.driver') !== 'database') {
             throw new \RuntimeException('Session driver must be set to "database" to logout other browser sessions.');
         }

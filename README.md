@@ -162,7 +162,7 @@ Stronghold::confirmLocationView(function () {
 });
 ```
 
-> ![NOTE]
+> [!NOTE]
 > It is preferable that if you are using the two factor feature, you set the `confirmPassword` option to `false`.
 
 ### Custom New Location Detection

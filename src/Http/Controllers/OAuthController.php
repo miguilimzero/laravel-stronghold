@@ -4,16 +4,18 @@ namespace Miguilim\LaravelStronghold\Http\Controllers;
 
 use Exception;
 use Illuminate\Contracts\Auth\StatefulGuard;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Laravel\Fortify\Events\TwoFactorAuthenticationChallenged;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Socialite\Facades\Socialite;
 use Miguilim\LaravelStronghold\Models\ConnectedAccount;
 use Miguilim\LaravelStronghold\Contracts\CreatesUserFromProvider;
 use Miguilim\LaravelStronghold\Contracts\CreatesConnectedAccounts;
 use Miguilim\LaravelStronghold\Stronghold;
 use Laravel\Fortify\Fortify;
+use Symfony\Component\HttpFoundation\Response;
 
 class OAuthController extends Controller
 {
@@ -30,7 +32,7 @@ class OAuthController extends Controller
     /**
      * Handle the callback from the provider.
      */
-    public function handleProviderCallback(Request $request, StatefulGuard $guard, string $provider): JsonResponse|RedirectResponse
+    public function handleProviderCallback(Request $request, StatefulGuard $guard, string $provider): Response
     {
         $this->validateProvider($provider);
 
@@ -62,6 +64,10 @@ class OAuthController extends Controller
         // Existing connected account - log in the user
         if ($connectedAccount) {
             $user = $connectedAccount->user;
+
+            if ($response = $this->redirectIfTwoFactorAuthenticatable($request, $user)) {
+                return $response;
+            }
 
             $guard->login($user, config('stronghold.socialite_remember', true));
 
@@ -106,5 +112,39 @@ class OAuthController extends Controller
     protected function hasSocialAccount(mixed $userId, string $provider): bool
     {
         return ConnectedAccount::query()->where('user_id', $userId)->where('provider', $provider)->first() !== null;
+    }
+
+    protected function redirectIfTwoFactorAuthenticatable(Request $request, mixed $user): ?Response
+    {
+        if (Fortify::confirmsTwoFactorAuthentication()) {
+            if (optional($user)->two_factor_secret &&
+                ! is_null(optional($user)->two_factor_confirmed_at) &&
+                in_array(TwoFactorAuthenticatable::class, class_uses_recursive($user))) {
+                return $this->twoFactorChallengeResponse($request, $user);
+            } else {
+                return null;
+            }
+        }
+
+        if (optional($user)->two_factor_secret &&
+            in_array(TwoFactorAuthenticatable::class, class_uses_recursive($user))) {
+            return $this->twoFactorChallengeResponse($request, $user);
+        }
+
+        return null;
+    }
+
+    protected function twoFactorChallengeResponse(Request $request, mixed $user): Response
+    {
+        $request->session()->put([
+            'login.id' => $user->getKey(),
+            'login.remember' => config('stronghold.socialite_remember', true),
+        ]);
+
+        TwoFactorAuthenticationChallenged::dispatch($user);
+
+        return $request->wantsJson()
+            ? response()->json(['two_factor' => true])
+            : redirect()->route('two-factor.login');
     }
 }

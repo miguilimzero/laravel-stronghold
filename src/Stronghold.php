@@ -58,7 +58,7 @@ class Stronghold
 
             $props = [
                 'sessions' => $sessions,
-                'connectedAccounts' => request()->user()->getConnectedProviders(),
+                'connectedAccounts' => request()->user()->connectedAccounts,
                 'twoFactorAuthentication' => Features::enabled(Features::twoFactorAuthentication()),
                 'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
                 'userHasPassword' => request()->user()->password !== null,

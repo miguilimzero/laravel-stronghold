@@ -46,7 +46,7 @@ class OAuthController extends Controller
         if ($guard->check()) {
             $user = $guard->user();
 
-            if ($this->hasSocialAccount($user->id, $provider)) {
+            if ($user->getConnectedAccount($provider) !== null) {
                 return redirect()->route('profile.show')->with('error', __('You already have a connected account for this provider.'));
             }
 
@@ -107,11 +107,6 @@ class OAuthController extends Controller
 
             abort(404);
         }
-    }
-
-    protected function hasSocialAccount(mixed $userId, string $provider): bool
-    {
-        return ConnectedAccount::query()->where('user_id', $userId)->where('provider', $provider)->first() !== null;
     }
 
     protected function redirectIfTwoFactorAuthenticatable(Request $request, mixed $user): ?Response

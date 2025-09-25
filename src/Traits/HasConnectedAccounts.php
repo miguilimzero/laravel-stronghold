@@ -26,18 +26,6 @@ trait HasConnectedAccounts
     }
 
     /**
-     * Get all providers the user has connected.
-     */
-    public function getConnectedProviders(): array
-    {
-        return $this->connectedAccounts()
-            ->pluck('provider')
-            ->unique()
-            ->values()
-            ->toArray();
-    }
-
-    /**
      * Determine if the user can disconnect the given account.
      */
     public function canDisconnectAccount(string $provider): bool

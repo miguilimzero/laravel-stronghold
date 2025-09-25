@@ -66,8 +66,8 @@ Route::group(['middleware' => config('fortify.middleware', ['web'])], function (
             ->middleware([$authMiddleware])
             ->name('connected-accounts.destroy');
 
-        Route::put(RoutePath::for('current-user-password.store', '/user/password'), [StrongholdUserController::class, 'passwordStore'])
+        Route::put(RoutePath::for('user-password.set', '/user/set-password'), [StrongholdUserController::class, 'passwordSet'])
             ->middleware([$authMiddleware])
-            ->name('current-user-password.store');
+            ->name('user-password.set');
     }
 });

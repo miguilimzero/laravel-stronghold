@@ -87,7 +87,7 @@ class StrongholdUserController extends Controller
     /**
      * Set a password for the authenticated user.
      */
-    public function passwordStore(Request $request): RedirectResponse
+    public function passwordSet(Request $request): RedirectResponse
     {
         $user = $request->user();
 

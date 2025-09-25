@@ -153,7 +153,7 @@ Register custom views in your `FortifyServiceProvider`:
 use Miguilim\LaravelStronghold\Stronghold;
 
 Stronghold::profileView(function (array $data) {
-    return view('profile.show', $data); // 'confirmsTwoFactorAuthentication', 'sessions', 'connectedAccounts'
+    return view('profile.show', $data); // 'sessions', 'connectedAccounts', 'twoFactorAuthentication', 'confirmsTwoFactorAuthentication', 'userHasPassword'
 });
 
 // Optional, only if you will use the confirm-new-location feature
@@ -161,6 +161,9 @@ Stronghold::confirmLocationView(function () {
     return view('auth.confirm-location');
 });
 ```
+
+> ![NOTE]
+> It is preferable that if you are using the two factor feature, you set the `confirmPassword` option to `false`.
 
 ### Custom New Location Detection
 

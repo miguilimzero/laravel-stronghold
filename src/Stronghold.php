@@ -58,8 +58,10 @@ class Stronghold
 
             $props = [
                 'sessions' => $sessions,
-                'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
                 'connectedAccounts' => request()->user()->getConnectedProviders(),
+                'twoFactorAuthentication' => Features::enabled(Features::twoFactorAuthentication()),
+                'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
+                'userHasPassword' => request()->user()->password !== null,
             ];
 
             if (! is_callable($view) || is_string($view)) {

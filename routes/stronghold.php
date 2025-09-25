@@ -52,15 +52,13 @@ Route::group(['middleware' => config('fortify.middleware', ['web'])], function (
 
     if (in_array('socialite', config('stronghold.features', []))) {
         Route::get(RoutePath::for('oauth.redirect', '/oauth/{provider}'), [OAuthController::class, 'redirectToProvider'])
-            ->middleware([$guestMiddleware])
-            ->name('oauth.redirect');
+            ->name('oauth.redirect'); // guest & auth access
 
             Route::get(RoutePath::for('oauth.callback', '/oauth/{provider}/callback'), [OAuthController::class, 'handleProviderCallback'])
                 ->middleware(array_filter([
-                    $guestMiddleware,
                     $limiterTwoFactor ? "throttle:{$limiterTwoFactor}" : null,
                 ]))
-                ->name('oauth.callback');
+                ->name('oauth.callback'); // guest & auth access
 
         Route::delete(RoutePath::for('connected-accounts.destroy', '/user/connected-account/{id}'), [StrongholdUserController::class, 'destroyConnectedAccount'])
             ->middleware([$authMiddleware])

@@ -70,6 +70,7 @@ class Stronghold
                 'connectedAccounts' => $hasSocialite ? request()->user()->connectedAccounts : [],
                 'twoFactorAuthentication' => Features::enabled(Features::twoFactorAuthentication()),
                 'confirmsTwoFactorAuthentication' => Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm'),
+                'userTwoFactorEnabled' => request()->user()->hasEnabledTwoFactorAuthentication(),
                 'userHasPassword' => request()->user()->password !== null,
             ];
 

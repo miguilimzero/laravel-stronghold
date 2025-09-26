@@ -158,13 +158,12 @@ Register custom views in your `FortifyServiceProvider`:
 ```php
 use Miguilim\LaravelStronghold\Stronghold;
 
-Stronghold::profileView(function (array $data) {
-    return view('profile.show', $data); // 'sessions', 'connectedAccounts', 'twoFactorAuthentication', 'confirmsTwoFactorAuthentication', 'userHasPassword'
-});
-
-// Optional, only if you will use the confirm-new-location feature
 Stronghold::confirmLocationView(function () {
     return view('auth.confirm-location');
+});
+
+Stronghold::profileView(function (array $data) {
+    return view('profile.show', $data);
 });
 ```
 

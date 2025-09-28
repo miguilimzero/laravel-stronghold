@@ -4,6 +4,7 @@ namespace Miguilim\LaravelStronghold;
 
 use Closure;
 
+use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Responses\SimpleViewResponse;
 use Miguilim\LaravelStronghold\Contracts\ConfirmLocationViewResponse;
 use Miguilim\LaravelStronghold\Contracts\ProfileViewResponse;
@@ -121,5 +122,29 @@ class Stronghold
 
         // Default behavior - always require confirmation
         return true;
+    }
+
+    /**
+     * Get session status message converted into a human-readable sentence.
+     */
+    public static function getSessionStatusMessage(): ?string
+    {
+        $message = request()->session()->get('status');
+
+        return match ($message) {
+            Fortify::PASSWORD_UPDATED                    => __('Your password has been updated.'),
+            Fortify::PROFILE_INFORMATION_UPDATED         => __('Your profile information has been updated.'),
+            Fortify::RECOVERY_CODES_GENERATED            => __('New recovery codes have been generated.'),
+            Fortify::TWO_FACTOR_AUTHENTICATION_CONFIRMED => __('Two factor authentication has been confirmed.'),
+            Fortify::TWO_FACTOR_AUTHENTICATION_DISABLED  => __('Two factor authentication has been disabled.'),
+            Fortify::TWO_FACTOR_AUTHENTICATION_ENABLED   => __('Two factor authentication has been enabled.'),
+            Fortify::VERIFICATION_LINK_SENT              => __('A verification link has been sent to your email address.'),
+            static::OTHER_BROWSER_SESSIONS_DESTROYED     => __('Other browser sessions have been logged out from your account.'),
+            static::PROFILE_PHOTO_DESTROYED              => __('Your profile photo has been removed.'),
+            static::SOCIALITE_ACCOUNT_CONNECTED          => __('A social account has been connected to your account.'),
+            static::SOCIALITE_ACCOUNT_DESTROYED          => __('A social account has been removed from your account.'),
+            static::PASSWORD_SET                         => __('Your password has been set.'),
+            default                                      => $message,
+        };
     }
 }

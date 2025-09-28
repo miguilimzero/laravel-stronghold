@@ -13,6 +13,7 @@ Laravel Stronghold is an extended version of Laravel Fortify that adds profile m
   - [User Traits](#user-traits)
   - [Customizing Views](#customizing-views)
   - [Custom New Location Detection](#custom-new-location-detection)
+  - [Session Status Messages](#session-status-messages)
 - [License](#license)
 
 ## Installation
@@ -181,6 +182,16 @@ Stronghold::detectNewLocationUsing(function ($request, $user) {
     return true; // true if it is a new location (default is always true)
 });
 ```
+
+### Session Status Messages
+
+To retrieve human-readable session status messages:
+
+```php
+$message = Stronghold::getSessionStatusMessage();
+```
+
+This method converts session status keys into localized, human-readable messages for various actions such as password updates, profile changes, two-factor authentication events, and Stronghold-specific events like session logouts or social account connections.
 
 ## License
 

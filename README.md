@@ -135,6 +135,12 @@ Users can authenticate using OAuth providers:
 /oauth/{provider}/callback # Handle OAuth callback
 ```
 
+> [!IMPORTANT]
+> The `socialite` feature oauth endpoint will:
+> If account and provider account are found - authenticate the user.
+> If account was found but the provider account is not connected - return an error and ask the user to login and connect the provider account from the profile page.
+> If account and provider account were not found - create the account, create the provider account and authenticate the user.
+
 ### User Traits
 
 Add the provided traits to your User model to enable additional functionality:

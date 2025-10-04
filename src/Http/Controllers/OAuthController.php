@@ -50,6 +50,13 @@ class OAuthController extends Controller
                 return redirect()->route('profile.show')->with('error', __('You already have a connected account for this provider.'));
             }
 
+            if (ConnectedAccount::query()
+                ->where('provider', $provider)
+                ->where('provider_id', $socialUser->getId())
+                ->first() !== null) {
+                    return redirect()->route('profile.show')->with('error', __('This social account is already connected to another user.'));
+            }
+
             app(CreatesConnectedAccounts::class)->create($user, $provider, $socialUser);
 
             return redirect()->route('profile.show')->with('status', Stronghold::SOCIALITE_ACCOUNT_CONNECTED);

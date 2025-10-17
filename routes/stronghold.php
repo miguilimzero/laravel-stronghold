@@ -45,7 +45,7 @@ Route::group(['middleware' => config('fortify.middleware', ['web'])], function (
         Route::post(RoutePath::for('confirm-location.login', '/confirm-location'), [NewLocationAuthenticatedSessionController::class, 'store'])
             ->middleware(array_filter([
                 $guestMiddleware,
-                $limiter ? "throttle:{$limiter}" : null,
+                $limiterTwoFactor ? "throttle:{$limiterTwoFactor}" : null,
             ]))
             ->name('confirm-location.login.store');
     }
@@ -56,7 +56,7 @@ Route::group(['middleware' => config('fortify.middleware', ['web'])], function (
 
             Route::get(RoutePath::for('oauth.callback', '/oauth/{provider}/callback'), [OAuthController::class, 'handleProviderCallback'])
                 ->middleware(array_filter([
-                    $limiterTwoFactor ? "throttle:{$limiterTwoFactor}" : null,
+                    $limiter ? "throttle:{$limiter}" : null,
                 ]))
                 ->name('oauth.callback'); // guest & auth access
 

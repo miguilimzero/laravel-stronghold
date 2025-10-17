@@ -67,7 +67,7 @@ trait HasProfilePhoto
     /**
      * Get the URL to the user's profile photo.
      */
-    public function profilePhotoUrl(): Attribute
+    protected function profilePhotoUrl(): Attribute
     {
         return Attribute::make(
             get: fn() => $this->profile_photo_path

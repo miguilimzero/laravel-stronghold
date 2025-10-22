@@ -39,7 +39,7 @@ class OAuthController extends Controller
         try {
             $socialUser = Socialite::driver($provider)->user();
         } catch (Exception $e) {
-            return redirect()->route(Fortify::redirects('login'))->with('error', __('Social login authentication failed. Please try again or contact support if the problem persists.'));
+            return redirect()->to(Fortify::redirects('login'))->with('error', __('Social login authentication failed. Please try again or contact support if the problem persists.'));
         }
 
         // New social account (User is logged in and is trying to connect an account)
@@ -83,13 +83,13 @@ class OAuthController extends Controller
 
         // Not-existing connected account - first check if we have the email address
         if (! $socialUser->getEmail() || empty(trim($socialUser->getEmail()))) {
-            return redirect()->route(Fortify::redirects('login'))->with('error', __('Email permission is required. Please allow access to your email address information.'));
+            return redirect()->to(Fortify::redirects('login'))->with('error', __('Email permission is required. Please allow access to your email address information.'));
         }
 
         // User exists but there is no connected account for such provider
         $userModel = config('auth.providers.users.model');
         if ($userModel::where('email', $socialUser->getEmail())->first()) {
-            return redirect()->route(Fortify::redirects('login'))->with('error', __('An account with this email address already exists. Please log in with your existing credentials and then connect your social account from your profile page.'));
+            return redirect()->to(Fortify::redirects('login'))->with('error', __('An account with this email address already exists. Please log in with your existing credentials and then connect your social account from your profile page.'));
         }
 
         // User do not exists - create the account from the provider

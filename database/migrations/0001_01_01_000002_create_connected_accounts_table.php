@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('connected_accounts', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id');
+            $table->foreignId('user_id')->index();
             $table->string('provider');
             $table->string('provider_id');
             $table->string('name')->nullable();
@@ -27,7 +27,6 @@ return new class extends Migration
             $table->dateTime('expires_at')->nullable(); // OAuth2
             $table->timestamps();
 
-            $table->index(['user_id', 'id']);
             $table->index(['provider', 'provider_id']);
         });
     }

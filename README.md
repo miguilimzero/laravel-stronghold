@@ -72,6 +72,20 @@ GOOGLE_CLIENT_SECRET=
 # Add other providers as needed...
 ```
 
+When using Laravel Stronghold with OAuth, you will need to update the default Fortify rate-limiter to support a throttle key without an username input:
+
+```php
+RateLimiter::for('login', function (Request $request) {
+  $usernameValue = ($request->input(Fortify::username()) !== null)
+    ? Str::lower($request->input(Fortify::username()))
+    : 'socialite';
+
+  $throttleKey = Str::transliterate($usernameValue.'|'.$request->ip());
+
+  return Limit::perMinute(5)->by($throttleKey);
+});
+```
+
 ## Usage
 
 ### Editing Profile Action

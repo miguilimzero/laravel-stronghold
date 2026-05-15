@@ -104,7 +104,7 @@ Validator::make($input, [
         Rule::unique('users')->ignore($user->id),
     ],
 
-    'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,gif', 'max:2048'],
+    'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
 ])->validateWithBag('updateProfileInformation');
 
 if (isset($input['photo'])) {

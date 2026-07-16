@@ -33,9 +33,9 @@ class Stronghold
     /**
      * Specify which view should be used as the profile view.
      *
-     * @param  Closure(Request $request, array $data): Response|string  $view
+     * @param callable|string $view
      */
-    public static function profileView(Closure|string $view): void
+    public static function profileView($view): void
     {
         app()->singleton(ProfileViewResponse::class, function () use ($view) {
             if (config('session.driver') !== 'database') {
@@ -93,9 +93,9 @@ class Stronghold
     /**
      * Specify which view should be used as the confirm new location view.
      *
-     * @param  Closure(Request $request, array $data): Response|string  $view
+     * @param callable|string $view
      */
-    public static function confirmLocationView(Closure|string $view): void
+    public static function confirmLocationView($view): void
     {
         app()->singleton(ConfirmLocationViewResponse::class, function () use ($view) {
             return new SimpleViewResponse($view);

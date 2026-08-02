@@ -22,9 +22,13 @@ class OAuthController extends Controller
     /**
      * Redirect the user to the provider authentication page.
      */
-    public function redirectToProvider(Request $request, string $provider): RedirectResponse
+    public function redirectToProvider(Request $request, string $provider): RedirectResponse|Response
     {
         $this->validateProvider($provider);
+
+        if ($provider === 'telegram') {
+            return response(Socialite::driver($provider)->redirect());
+        }
 
         return Socialite::driver($provider)->redirect();
     }

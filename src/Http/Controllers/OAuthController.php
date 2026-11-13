@@ -76,6 +76,12 @@ class OAuthController extends Controller
         if ($connectedAccount) {
             $user = $connectedAccount->user;
 
+            // A retained connected account an resolve to null
+            // when its user is soft-deleted or missing
+            if ($user === null) {
+                return redirect()->route('login')->with('error', __('The account connected to this social login is no longer available. Please contact support.'));
+            }
+
             if ($response = $this->redirectIfTwoFactorAuthenticatable($request, $user)) {
                 return $response;
             }
